@@ -154,7 +154,7 @@ const HomePage = () => {
             <div>
               <h3 className="text-2xl font-bold mb-4 text-gray-800">Our Story</h3>
               <p className="text-gray-700 mb-6 leading-relaxed">
-                Founded in 2010, FabriX has grown from a small fabric supplier to a comprehensive 
+                Founded in 2025, FabriX has grown from a small fabric supplier to a comprehensive 
                 textile solution provider serving businesses across the globe. Our journey started 
                 with a passion for quality fabrics and a vision to revolutionize how businesses 
                 approach their textile needs.

@@ -1,13 +1,9 @@
-import express from 'express';
-import { createPaymentIntent, processWebhook } from '../controllers/paymentController';
-import { protect } from '../middleware/authMiddleware';
+import { Router } from 'express';
+import { createPaymentIntent, handleWebhook } from '../controllers/paymentController';
 
-const router = express.Router();
+const router = Router();
 
-// Create payment intent
-router.post('/create-payment-intent', protect, createPaymentIntent);
-
-// Stripe webhook endpoint
-router.post('/webhook', express.raw({ type: 'application/json' }), processWebhook);
+router.post('/create-payment-intent', createPaymentIntent);router.post('/create-payment-intent', createPaymentIntent);
+router.post('/webhook', handleWebhook);
 
 export default router;

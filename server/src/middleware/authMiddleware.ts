@@ -5,6 +5,8 @@ import User from '../models/User';
 import { ApiError } from '../utils/ApiError';
 import { AuthRequest } from '../types/express';
 import config from '../config';
+import mongoose from 'mongoose';
+import { IUser } from '../models/User';
 
 // Protect routes
 export const protect = asyncHandler(async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -37,7 +39,7 @@ export const protect = asyncHandler(async (req: AuthRequest, res: Response, next
     }
 
     // Add user to request
-    req.user = user;
+    req.user = user as unknown as IUser & { _id: mongoose.Types.ObjectId };
     next();
   } catch (error) {
     console.error('JWT Verification Error:', error);

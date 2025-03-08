@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import config from '../../config';
+//import { EnhancedGenerateContentResponse } from 'some-module'; // Adjust the import as needed
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(config.googleAI.apiKey);
@@ -80,11 +81,11 @@ export const generateGeminiResponse = async (
     
     // Generate response
     const result = await chat.sendMessage(enhancedPrompt);
-    const response = result.response;
+    const response: EnhancedGenerateContentResponse = result.response;
 
     return {
       text: response.text(),
-      safetyRatings: response.safetyRatings
+      safetyRatings: response.safetyRatings // Ensure this property exists on the type
     };
   } catch (error) {
     console.error('Gemini API error:', error);
