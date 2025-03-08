@@ -20,7 +20,8 @@
     "prepare": "husky install",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
   },
   "keywords": [
     "ecommerce",
@@ -50,5 +51,9 @@
     "server/src/**/*.{js,ts}": [
       "npm run lint --prefix server"
     ]
+  },
+  "dependencies": {
+    "oidc-client-ts": "^3.1.0",
+    "react-oidc-context": "^3.2.0"
   }
 }
