@@ -4,6 +4,7 @@ import User from '../models/User';
 import { ApiError } from '../utils/ApiError';
 import { generateToken } from '../utils/generateToken';
 import { AuthRequest } from '../types/express';
+import { Types } from 'mongoose';
 
 // @desc    Register a new user
 // @route   POST /api/users
@@ -31,7 +32,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 
   if (user) {
     // Generate token and send in cookie
-    generateToken(res, user._id);
+    generateToken(res, user._id as Types.ObjectId);
 
     res.status(201).json({
       _id: user._id,
@@ -64,7 +65,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Generate token and send in cookie
-  generateToken(res, user._id);
+  generateToken(res, user._id as Types.ObjectId);
 
   res.json({
     _id: user._id,
@@ -244,7 +245,7 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
 // @desc    Delete user
 // @route   DELETE /api/users/:id
 // @access  Private/Admin
-export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
+export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
@@ -252,7 +253,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   // Prevent admin from deleting themselves
-  if (req.params.id === req.user?._id.toString()) {
+  if (req.user && req.params.id === (req.user._id as Types.ObjectId).toString()) {
     throw new ApiError(400, 'Cannot delete your own account');
   }
 

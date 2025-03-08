@@ -16,6 +16,7 @@ import orderRoutes from './routes/orderRoutes';
 import paymentRoutes from './routes/paymentRoutes';
 import logoRoutes from './routes/logoRoutes';
 import chatRoutes from './routes/chatRoutes';
+import placeholderRoutes from './routes/placeholderRoutes';
 
 // Initialize express app
 const app: Express = express();
@@ -25,7 +26,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(compression());
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false // Disable for development
+}));
 app.use(morgan('dev'));
 app.use(cors({
   origin: config.allowedOrigins,
@@ -41,6 +44,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/logo', logoRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/placeholder', placeholderRoutes);
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {
@@ -53,6 +57,11 @@ if (process.env.NODE_ENV === 'production') {
 
   app.get('*', (req: Request, res: Response) => {
     res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
+  });
+} else {
+  // For development, add a catch-all route for unmatched API routes
+  app.use('/api/*', (req: Request, res: Response) => {
+    res.status(404).json({ error: `API endpoint not found: ${req.originalUrl}` });
   });
 }
 
@@ -70,12 +79,5 @@ const connectDB = async () => {
   }
 };
 
-connectDB();
-
-// Start server
-const PORT = config.port || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
-
+export { connectDB };
 export default app;

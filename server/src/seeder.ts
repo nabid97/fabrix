@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import colors from 'colors';
 import User from './models/User';
 import Product, { ClothingProduct, FabricProduct } from './models/Product';
 import Order from './models/Order';
@@ -13,9 +12,6 @@ import fabricProducts from './data/fabricProducts';
 
 // Load environment variables
 dotenv.config();
-
-// Set up colors for console output
-colors.enable();
 
 // Connect to database
 mongoose.connect(config.mongoURI);
@@ -45,10 +41,10 @@ const importData = async () => {
     await ClothingProduct.insertMany(clothingProductsWithUser);
     await FabricProduct.insertMany(fabricProductsWithUser);
 
-    console.log('Data imported!'.green.inverse);
+    console.log('\x1b[32m%s\x1b[0m', 'Data imported!');
     process.exit();
   } catch (error) {
-    console.error(`${error}`.red.inverse);
+    console.error('\x1b[31m%s\x1b[0m', `Error: ${error}`);
     process.exit(1);
   }
 };
@@ -61,10 +57,10 @@ const destroyData = async () => {
     await Product.deleteMany();
     await Order.deleteMany();
 
-    console.log('Data destroyed!'.red.inverse);
+    console.log('\x1b[31m%s\x1b[0m', 'Data destroyed!');
     process.exit();
   } catch (error) {
-    console.error(`${error}`.red.inverse);
+    console.error('\x1b[31m%s\x1b[0m', `Error: ${error}`);
     process.exit(1);
   }
 };

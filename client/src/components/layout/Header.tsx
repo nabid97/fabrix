@@ -2,25 +2,25 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useChatbot } from '../../contexts/ChatbotContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { ShoppingCart, Menu, X, MessageCircle } from 'lucide-react';
 import { User as UserIcon } from 'lucide-react'; // Rename to avoid conflict with User type
-import { User } from "oidc-client-ts";
 
-
+// Make all props optional
 interface HeaderProps {
-  isAuthenticated: boolean;
-  user: User | null | undefined;
-  signOut: () => Promise<void>;
+  // Props are optional because we'll use hooks within the component by default
 }
-const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, signOut }) => {
+
+const Header: React.FC<HeaderProps> = () => {
   const { itemCount } = useCart();
   const { toggleChatbot } = useChatbot();
+  const { isAuthenticated, user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await signOut(); // Use the signOut prop instead of logout
+      await logout();
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -82,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, signOut }) => {
               <div className="relative group">
                 <button className="flex items-center space-x-1 text-gray-700 hover:text-teal-600">
                   <UserIcon size={24} />
-                  <span className="hidden lg:inline">{user?.profile?.name || 'Account'}</span>
+                  <span className="hidden lg:inline">{user?.name || 'Account'}</span>
                 </button>
                 <div className="absolute right-0 w-48 mt-2 bg-white shadow-lg rounded-md overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                   <div className="py-2">

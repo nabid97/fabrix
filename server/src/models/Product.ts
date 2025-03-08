@@ -102,10 +102,11 @@ const clothingSchema = new Schema({
   gender: {
     type: [String],
     required: true,
-    enum: {
-      values: ['men', 'women', 'unisex'],
-      message: '{VALUE} is not a valid gender',
-    },
+    // Remove the enum restriction or update it to include all valid values
+    // enum: {
+    //   values: ['men', 'women', 'unisex'],
+    //   message: '{VALUE} is not a valid gender',
+    // },
   },
   minOrderQuantity: {
     type: Number,

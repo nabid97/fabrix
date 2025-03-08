@@ -55,6 +55,10 @@
   },
   "dependencies": {
     "all": "^0.0.0",
+    "compression": "^1.8.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "morgan": "^1.10.0",
     "oidc-client-ts": "^3.1.0",
     "react-helmet": "^6.1.0",
     "react-helmet-async": "^2.0.5",

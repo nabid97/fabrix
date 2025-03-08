@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { Response } from 'express';
 import { Types } from 'mongoose';
 import config from '../config';
@@ -10,9 +10,11 @@ import config from '../config';
  */
 export const generateToken = (res: Response, userId: Types.ObjectId) => {
   // Create token with user ID
-  const token = jwt.sign({ id: userId }, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn,
-  });
+  const token = jwt.sign(
+    { id: userId.toString() },
+    config.jwtSecret as string,
+    { expiresIn: config.jwtExpiresIn } as SignOptions
+  );
 
   // Set token as HTTP-only cookie
   res.cookie('jwt', token, {
