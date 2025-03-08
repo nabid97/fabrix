@@ -1,0 +1,264 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY_BACKEND: fabrix-backend
+  EKS_CLUSTER_NAME: fabrix-dev-cluster
+  FRONTEND_S3_BUCKET: fabrix-dev-frontend
+  HELM_RELEASE_NAME: fabrix-backend
+  KUBE_NAMESPACE: fabrix
+
+jobs:
+  lint-test-backend:
+    name: Lint and Test Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+          
+      - name: Install dependencies
+        run: cd server && npm ci
+        
+      - name: Run linting
+        run: cd server && npm run lint
+        
+      - name: Run tests
+        run: cd server && npm test
+      
+      - name: Run security audit
+        run: cd server && npm audit --production
+  
+  lint-test-frontend:
+    name: Lint and Test Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+          
+      - name: Install dependencies
+        run: cd client && npm ci
+        
+      - name: Run linting
+        run: cd client && npm run lint
+        
+      - name: Run tests
+        run: cd client && npm test
+        
+      - name: Run security audit
+        run: cd client && npm audit --production
+  
+  build-push-backend:
+    name: Build and Push Backend Image
+    needs: [lint-test-backend]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        
+      - name: Extract branch name
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+        
+      - name: Set image tag
+        id: set-tag
+        run: |
+          if [[ "${{ env.BRANCH_NAME }}" == "main" ]]; then
+            echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=${{ env.BRANCH_NAME }}-$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+          fi
+        
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_BACKEND }}:${{ env.IMAGE_TAG }}
+          build-args: |
+            NODE_ENV=production
+        
+      - name: Scan Docker image for vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_BACKEND }}:${{ env.IMAGE_TAG }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+  
+  build-deploy-frontend:
+    name: Build and Deploy Frontend
+    needs: [lint-test-frontend]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+          
+      - name: Install dependencies
+        run: cd client && npm ci
+        
+      - name: Build React app
+        run: cd client && npm run build
+        env:
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          REACT_APP_COGNITO_USER_POOL_ID: ${{ secrets.REACT_APP_COGNITO_USER_POOL_ID }}
+          REACT_APP_COGNITO_CLIENT_ID: ${{ secrets.REACT_APP_COGNITO_CLIENT_ID }}
+          REACT_APP_STRIPE_PUBLISHABLE_KEY: ${{ secrets.REACT_APP_STRIPE_PUBLISHABLE_KEY }}
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Deploy to S3
+        run: aws s3 sync client/build/ s3://${{ env.FRONTEND_S3_BUCKET }} --delete
+        
+      - name: Invalidate CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+  
+  deploy-backend:
+    name: Deploy Backend to EKS
+    needs: [build-push-backend]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+        
+      - name: Extract branch name
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+        
+      - name: Set image tag
+        id: set-tag
+        run: |
+          if [[ "${{ env.BRANCH_NAME }}" == "main" ]]; then
+            echo "IMAGE_TAG=latest" >> $GITHUB_ENV
+          else
+            echo "IMAGE_TAG=${{ env.BRANCH_NAME }}-$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+          fi
+          
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.10.0'
+        
+      - name: Deploy to Kubernetes with Helm
+        run: |
+          # Ensure namespace exists
+          kubectl create namespace ${{ env.KUBE_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+          
+          # Replace placeholders in values file
+          sed -i "s|#{ECR_REPOSITORY}#|${{ steps.login-ecr.outputs.registry }}|g" infrastructure/kubernetes/helm/fabrix-backend/values.yaml
+          sed -i "s|latest|${{ env.IMAGE_TAG }}|g" infrastructure/kubernetes/helm/fabrix-backend/values.yaml
+          
+          # Deploy Helm chart
+          helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ./infrastructure/kubernetes/helm/fabrix-backend \
+            --namespace ${{ env.KUBE_NAMESPACE }} \
+            --set image.tag=${{ env.IMAGE_TAG }} \
+            --set app.database.uri=${{ secrets.MONGODB_URI }} \
+            --set app.aws.region=${{ env.AWS_REGION }} \
+            --set app.aws.s3.uploadsBucket=${{ secrets.S3_UPLOADS_BUCKET }} \
+            --set app.aws.cognito.userPoolId=${{ secrets.COGNITO_USER_POOL_ID }} \
+            --set app.aws.cognito.clientId=${{ secrets.COGNITO_CLIENT_ID }} \
+            --set app.externalServices.stripe.secretKey=${{ secrets.STRIPE_SECRET_KEY }} \
+            --set app.externalServices.stripe.webhookSecret=${{ secrets.STRIPE_WEBHOOK_SECRET }} \
+            --set app.externalServices.stabilityAi.apiKey=${{ secrets.STABILITY_AI_API_KEY }} \
+            --set app.externalServices.gemini.apiKey=${{ secrets.GEMINI_API_KEY }} \
+            --set app.externalServices.odoo.url=${{ secrets.ODOO_URL }} \
+            --set app.externalServices.odoo.apiKey=${{ secrets.ODOO_API_KEY }} \
+            --set app.externalServices.odoo.database=${{ secrets.ODOO_DATABASE }} \
+            --set app.email.from=${{ secrets.EMAIL_FROM }} \
+            --set app.email.sendgrid.apiKey=${{ secrets.SENDGRID_API_KEY }}
+        
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/${{ env.HELM_RELEASE_NAME }} -n ${{ env.KUBE_NAMESPACE }}
+          echo "Deployment successful!"
+
+  security-scan:
+    name: Security Scanning
+    needs: [lint-test-backend, lint-test-frontend]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Run SAST scan with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=fabrix
+            -Dsonar.organization=fabrix
+      
+      - name: Run dependency scan
+        uses: snyk/actions/node@master
+        with:
+          args: --all-projects
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}

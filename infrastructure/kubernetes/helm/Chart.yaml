@@ -1,0 +1,198 @@
+# Default values for fabrix-backend.
+# This is a YAML-formatted file.
+
+replicaCount: 2
+
+image:
+  repository: #{ECR_REPOSITORY}#/fabrix-backend
+  tag: latest
+  pullPolicy: Always
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  # Annotations to add to the service account
+  annotations: {}
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: "alb"
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+  hosts:
+    - host: api.#{DOMAIN_NAME}#
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Application specific configuration
+app:
+  port: 3000
+  nodeEnv: production
+  
+  # MongoDB connection
+  database:
+    uri: mongodb+srv://#{MONGODB_USERNAME}#:#{MONGODB_PASSWORD}#@#{MONGODB_HOST}#/#{MONGODB_DATABASE}#
+  
+  # AWS Configuration
+  aws:
+    region: us-east-1
+    s3:
+      uploadsBucket: #{S3_UPLOADS_BUCKET}#
+    cognito:
+      userPoolId: #{COGNITO_USER_POOL_ID}#
+      clientId: #{COGNITO_CLIENT_ID}#
+  
+  # External Services
+  externalServices:
+    stripe:
+      secretKey: "#{STRIPE_SECRET_KEY}#"
+      webhookSecret: "#{STRIPE_WEBHOOK_SECRET}#"
+    stabilityAi:
+      apiKey: "#{STABILITY_AI_API_KEY}#"
+    gemini:
+      apiKey: "#{GEMINI_API_KEY}#"
+    odoo:
+      url: "#{ODOO_URL}#"
+      apiKey: "#{ODOO_API_KEY}#"
+      database: "#{ODOO_DATABASE}#"
+  
+  # Email Configuration
+  email:
+    from: "noreply@#{DOMAIN_NAME}#"
+    sendgrid:
+      apiKey: "#{SENDGRID_API_KEY}#"
+
+# Environment variables to be passed to the application
+env:
+  - name: PORT
+    value: "3000"
+  - name: NODE_ENV
+    value: "production"
+  - name: MONGODB_URI
+    valueFrom:
+      secretKeyRef:
+        name: mongodb-credentials
+        key: uri
+  - name: AWS_REGION
+    value: "us-east-1"
+  - name: S3_UPLOADS_BUCKET
+    value: "#{S3_UPLOADS_BUCKET}#"
+  - name: COGNITO_USER_POOL_ID
+    value: "#{COGNITO_USER_POOL_ID}#"
+  - name: COGNITO_CLIENT_ID
+    value: "#{COGNITO_CLIENT_ID}#"
+  - name: STRIPE_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: external-api-keys
+        key: stripe-secret-key
+  - name: STRIPE_WEBHOOK_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: external-api-keys
+        key: stripe-webhook-secret
+  - name: STABILITY_AI_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: external-api-keys
+        key: stability-ai-api-key
+  - name: GEMINI_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: external-api-keys
+        key: gemini-api-key
+  - name: ODOO_URL
+    value: "#{ODOO_URL}#"
+  - name: ODOO_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: external-api-keys
+        key: odoo-api-key
+  - name: ODOO_DATABASE
+    value: "#{ODOO_DATABASE}#"
+  - name: EMAIL_FROM
+    value: "noreply@#{DOMAIN_NAME}#"
+  - name: SENDGRID_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: external-api-keys
+        key: sendgrid-api-key
+
+# Health check probes
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 3000
+  initialDelaySeconds: 15
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Secrets to be created
+secrets:
+  mongodb:
+    name: mongodb-credentials
+    data:
+      uri: "#{MONGODB_URI_BASE64}#"
+  externalApiKeys:
+    name: external-api-keys
+    data:
+      stripe-secret-key: "#{STRIPE_SECRET_KEY_BASE64}#"
+      stripe-webhook-secret: "#{STRIPE_WEBHOOK_SECRET_BASE64}#"
+      stability-ai-api-key: "#{STABILITY_AI_API_KEY_BASE64}#"
+      gemini-api-key: "#{GEMINI_API_KEY_BASE64}#"
+      odoo-api-key: "#{ODOO_API_KEY_BASE64}#"
+      sendgrid-api-key: "#{SENDGRID_API_KEY_BASE64}#"

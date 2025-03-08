@@ -1,190 +1,203 @@
-# FabriX - E-Commerce Platform for Fabric and Clothing
+# FabriX - Custom Clothing and Fabric E-Commerce Platform
 
-FabriX is a modern e-commerce platform specializing in fabrics and customizable clothing for businesses. This application provides a comprehensive solution for ordering fabrics, designing custom clothing with logo integration, and managing the entire ordering process.
+FabriX is a comprehensive e-commerce platform specializing in custom clothing and premium fabrics for businesses. The application features a modern, responsive UI with features for product browsing, customization, logo generation, and ordering.
 
-## Features
+## 🌟 Features
 
-- **Fabric Catalog**: Browse and order high-quality fabrics with detailed specifications
-- **Custom Clothing**: Order customized clothing with logo placement options
-- **Logo Generator**: AI-powered logo creation using Stability AI
-- **AI Assistant**: Intelligent chatbot using Gemini AI for customer support
-- **Secure Authentication**: User registration and login via AWS Cognito
-- **Secure Payments**: Integrated with Stripe for payment processing
-- **ERP Integration**: Order management via Odoo Sales API
-- **Responsive Design**: Optimized for all devices with a modern UI
+- **Product Catalog**: Browse and filter clothing items and fabrics
+- **User Authentication**: Secure login/registration with JWT and AWS Amplify
+- **Shopping Cart**: Persistent cart with local storage
+- **Customization Options**: Detailed product customization for clothing and fabrics
+- **Logo Generator**: AI-powered logo generation for custom branding
+- **Chatbot Support**: AI assistant for customer inquiries
+- **Order Management**: Complete order processing with status tracking
+- **Payment Processing**: Secure checkout with Stripe integration
+- **Responsive Design**: Mobile-friendly UI built with React and Tailwind CSS
 
-## Tech Stack
+## 🚀 Technology Stack
 
 ### Frontend
-- React.js
-- TypeScript
-- Tailwind CSS
-- React Router
-- Stripe.js for payments
+- React with TypeScript
+- React Router for navigation
+- Tailwind CSS for styling
+- Context API for state management
 - AWS Amplify for authentication
+- Lucide React for icons
+- Axios for API requests
+- Stripe.js for payments
 
 ### Backend
-- Node.js
-- Express.js
-- TypeScript
+- Node.js with Express
+- TypeScript for type safety
 - MongoDB with Mongoose
-- AWS SDK for S3, Cognito
-- Stripe API
-- Stability AI API
-- Gemini AI API
-- Odoo API integration
+- JWT for authentication
+- Stripe API for payment processing
+- Google Gemini for AI chatbot
+- Stability AI for logo generation
+- AWS S3 for file storage
+- Nodemailer for email notifications
 
-### Infrastructure
-- AWS EKS for container orchestration
-- Docker for containerization
-- AWS S3 for static content and uploads
-- AWS CloudFront for content delivery
-- AWS Cognito for authentication
-- MongoDB Atlas for database
-- Terraform for Infrastructure as Code
-- Helm for Kubernetes deployments
-- GitHub Actions for CI/CD
-- Grafana and Prometheus for monitoring
+## 📋 Prerequisites
 
-## Project Structure
+- Node.js >= 18.0.0
+- MongoDB
+- AWS account with S3 bucket
+- Stripe account for payments
+- Google AI API key (for Gemini)
+- Stability AI API key
+
+## 🛠️ Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/fabrix.git
+   cd fabrix
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm run install-all
+   ```
+
+3. **Environment variables**
+   - Copy `.env.example` to `.env` in the server directory
+   - Update with your configuration
+   ```bash
+   cp server/.env.example server/.env
+   ```
+
+4. **Seed the database**
+   ```bash
+   cd server
+   npm run seed
+   ```
+
+5. **Start development servers**
+   ```bash
+   cd ..
+   npm run dev
+   ```
+
+## 🌐 Usage
+
+After starting the development servers:
+- Frontend runs on: http://localhost:3000
+- Backend API runs on: http://localhost:5000
+
+### Default Users
+
+- Admin User:
+  - Email: admin@fabrix.com
+  - Password: password123
+
+- Customer:
+  - Email: john@example.com
+  - Password: password123
+
+## 📁 Project Structure
 
 ```
 fabrix/
 ├── client/                      # Frontend React application
+│   ├── public/                  # Static files
+│   └── src/
+│       ├── api/                 # API integration
+│       ├── components/          # Reusable components
+│       ├── contexts/            # React contexts
+│       ├── hooks/               # Custom React hooks
+│       ├── pages/               # Page components
+│       ├── styles/              # CSS and styling
+│       ├── types/               # TypeScript definitions
+│       └── utils/               # Utility functions
+│
 ├── server/                      # Backend Node.js application
-├── infrastructure/              # Infrastructure as Code
-│   ├── terraform/               # Terraform IaC for AWS resources
-│   └── kubernetes/              # Kubernetes configurations
-│       └── helm/                # Helm charts
-├── .github/
-│   └── workflows/               # GitHub Actions CI/CD workflows
-└── docs/                        # Documentation
+│   ├── src/
+│       ├── config/              # Configuration
+│       ├── controllers/         # Request handlers
+│       ├── data/                # Sample data for seeding
+│       ├── middleware/          # Express middleware
+│       ├── models/              # MongoDB schemas
+│       ├── routes/              # API routes
+│       ├── services/            # Business logic
+│       └── utils/               # Helper functions
+│
+└── infrastructure/              # Deployment & infrastructure
+    ├── docker/                  # Docker configuration
+    ├── kubernetes/              # Kubernetes manifests
+    └── terraform/               # Terraform IaC
 ```
 
-## Getting Started
+## 📄 API Documentation
 
-### Prerequisites
+### Authentication
+- `POST /api/users/register` - Register a new user
+- `POST /api/users/login` - User login
+- `POST /api/users/logout` - User logout
 
-- Node.js >= 18.x
-- npm >= 9.x
-- Docker and Docker Compose
-- AWS CLI
-- Terraform >= 1.0.0
-- kubectl
-- Helm
+### Products
+- `GET /api/products` - Get all products
+- `GET /api/products/:id` - Get a specific product
+- `GET /api/products/clothing` - Get clothing products
+- `GET /api/products/fabric` - Get fabric products
 
-### Local Development Setup
+### Orders
+- `POST /api/orders` - Create an order
+- `GET /api/orders` - Get user orders
+- `GET /api/orders/:id` - Get order details
+- `PUT /api/orders/:id/pay` - Update order to paid
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/fabrix.git
-   cd fabrix
-   ```
+### Logo Generation
+- `POST /api/logo/generate` - Generate logo
+- `POST /api/logo/upload` - Upload custom logo
 
-2. Set up environment variables:
-   ```bash
-   # Copy example environment files
-   cp client/.env.example client/.env
-   cp server/.env.example server/.env
-   
-   # Edit the environment files with your values
-   ```
+### Chatbot
+- `POST /api/chat/gemini` - Get AI chat response
+- `GET /api/chat/faq` - Get quick FAQ response
 
-3. Install dependencies:
-   ```bash
-   # Install frontend dependencies
-   cd client
-   npm install
-   
-   # Install backend dependencies
-   cd ../server
-   npm install
-   ```
+## 🧪 Testing
 
-4. Start development servers:
-   ```bash
-   # Start frontend development server
-   cd client
-   npm start
-   
-   # Start backend development server
-   cd ../server
-   npm run dev
-   ```
+```bash
+# Run frontend tests
+cd client
+npm test
 
-5. Access the application:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
+# Run backend tests
+cd server
+npm test
+```
 
-### Docker Development
+## 🚢 Deployment
 
-1. Build and start the containers:
-   ```bash
-   docker-compose up --build
-   ```
+### Docker
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+```
 
-2. Access the application:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
+### Kubernetes
+```bash
+# Deploy to Kubernetes
+kubectl apply -f infrastructure/kubernetes/manifests/
+```
 
-## Deployment
+## 🔄 CI/CD
 
-### Deploying Infrastructure with Terraform
+This project uses GitHub Actions for CI/CD. The workflow is defined in `.github/workflows/ci-cd.yaml`.
 
-1. Initialize Terraform:
-   ```bash
-   cd infrastructure/terraform
-   terraform init
-   ```
+## 📝 License
 
-2. Plan the deployment:
-   ```bash
-   terraform plan -out=tfplan
-   ```
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-3. Apply the changes:
-   ```bash
-   terraform apply tfplan
-   ```
+## 🤝 Contributing
 
-### CI/CD Pipeline
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-The project uses GitHub Actions for CI/CD. The workflow includes:
-
-1. Linting and testing for frontend and backend
-2. Security scanning
-3. Building and pushing Docker images to ECR
-4. Deploying frontend to S3/CloudFront
-5. Deploying backend to EKS using Helm
-
-## API Documentation
-
-API documentation is available at `/api/docs` endpoint when running the application.
-
-## Monitoring and Logging
-
-- Grafana dashboards are available at `https://grafana.yourdomain.com`
-- Prometheus metrics are collected and stored for analysis
-- Logs are centralized in AWS CloudWatch
-
-## Security Features
-
-- JWT-based authentication with AWS Cognito
-- HTTPS encryption
-- Input validation and sanitization
-- Rate limiting
-- OWASP security best practices
-- Regular dependency updates
-- DevSecOps integration
-
-## Contributing
-
-1. Fork the repository
+1. Fork the project
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📞 Contact
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+- Project Link: [https://github.com/your-username/fabrix](https://github.com/your-username/fabrix)
