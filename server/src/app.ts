@@ -17,6 +17,8 @@ import paymentRoutes from './routes/paymentRoutes';
 import logoRoutes from './routes/logoRoutes';
 import chatRoutes from './routes/chatRoutes';
 import placeholderRoutes from './routes/placeholderRoutes';
+//import imageRoutes from './routes/imageRoutes';
+
 
 // Initialize express app
 const app: Express = express();
@@ -45,6 +47,9 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/logo', logoRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/placeholder', placeholderRoutes);
+//app.use('/api/images', imageRoutes);
+
+
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {

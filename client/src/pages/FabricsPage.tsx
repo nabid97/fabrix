@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { fetchFabrics } from '../api/productApi';
-import { ShoppingCart, Filter, X, Plus, Minus } from 'lucide-react';
+import { ShoppingCart, Filter, X, Plus, Minus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 // Fabric Type
 interface Fabric {
@@ -34,6 +34,10 @@ const colorOptions = [
   { name: 'Brown', value: 'brown', hex: '#92400e' },
 ];
 
+// Sort options
+type SortOption = 'name' | 'pricePerMeter' | 'type';
+type SortDirection = 'asc' | 'desc';
+
 const FabricsPage = () => {
   const { addItem } = useCart();
   
@@ -49,6 +53,10 @@ const FabricsPage = () => {
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(100);
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Sorting states
+  const [sortBy, setSortBy] = useState<SortOption>('name');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   
   // Selected fabric state for customization
   const [selectedFabric, setSelectedFabric] = useState<Fabric | null>(null);
@@ -77,29 +85,61 @@ const FabricsPage = () => {
   }, []);
   
   // Filter fabrics based on selections
-  const filteredFabrics = fabrics.filter((fabric) => {
-    // Filter by type
-    if (selectedTypes.length > 0 && !selectedTypes.includes(fabric.type.toLowerCase())) {
-      return false;
-    }
+  const getFilteredFabrics = () => {
+    return fabrics.filter((fabric) => {
+      // Filter by type
+      if (selectedTypes.length > 0 && !selectedTypes.includes(fabric.type.toLowerCase())) {
+        return false;
+      }
+      
+      // Filter by color
+      if (selectedColors.length > 0 && !fabric.availableColors.some(c => selectedColors.includes(c.toLowerCase()))) {
+        return false;
+      }
+      
+      // Filter by style
+      if (selectedStyles.length > 0 && !fabric.styles.some(s => selectedStyles.includes(s.toLowerCase()))) {
+        return false;
+      }
+      
+      // Filter by price
+      if (fabric.pricePerMeter < minPrice || fabric.pricePerMeter > maxPrice) {
+        return false;
+      }
+      
+      return true;
+    });
+  }
+  
+  // Sort the filtered fabrics
+  const getSortedFabrics = () => {
+    const filteredFabrics = getFilteredFabrics();
     
-    // Filter by color
-    if (selectedColors.length > 0 && !fabric.availableColors.some(c => selectedColors.includes(c.toLowerCase()))) {
-      return false;
-    }
-    
-    // Filter by style
-    if (selectedStyles.length > 0 && !fabric.styles.some(s => selectedStyles.includes(s.toLowerCase()))) {
-      return false;
-    }
-    
-    // Filter by price
-    if (fabric.pricePerMeter < minPrice || fabric.pricePerMeter > maxPrice) {
-      return false;
-    }
-    
-    return true;
-  });
+    return [...filteredFabrics].sort((a, b) => {
+      // Handle sorting based on the selected sort option
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'pricePerMeter':
+          comparison = a.pricePerMeter - b.pricePerMeter;
+          break;
+        case 'type':
+          comparison = a.type.localeCompare(b.type);
+          break;
+        default:
+          comparison = 0;
+      }
+      
+      // Reverse the comparison if sorting in descending order
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  };
+  
+  // Get the sorted and filtered fabrics
+  const sortedFilteredFabrics = getSortedFabrics();
   
   // Toggle selection of filter items
   const toggleFilter = (
@@ -112,6 +152,29 @@ const FabricsPage = () => {
     } else {
       setSelected([...selected, item]);
     }
+  };
+  
+  // Handle sorting changes
+  const handleSortChange = (option: SortOption) => {
+    if (sortBy === option) {
+      // Toggle direction if clicking the same option
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new sort option and default to ascending
+      setSortBy(option);
+      setSortDirection('asc');
+    }
+  };
+  
+  // Render sort icon based on current state
+  const renderSortIcon = (option: SortOption) => {
+    if (sortBy !== option) {
+      return <ArrowUpDown size={16} className="ml-1 text-gray-400" />;
+    }
+    
+    return sortDirection === 'asc' 
+      ? <ArrowUp size={16} className="ml-1 text-teal-600" />
+      : <ArrowDown size={16} className="ml-1 text-teal-600" />;
   };
   
   // Handle opening the customization modal
@@ -331,8 +394,40 @@ const FabricsPage = () => {
           </button>
         </div>
         
-        {/* Fabric Grid */}
+        {/* Fabric Grid and Sorting */}
         <div className="lg:w-3/4">
+          {/* Sorting Controls */}
+          <div className="bg-white rounded-xl shadow-md mb-6 p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium">
+                {sortedFilteredFabrics.length} {sortedFilteredFabrics.length === 1 ? 'fabric' : 'fabrics'} found
+              </h2>
+              <div className="flex space-x-4">
+                <button 
+                  onClick={() => handleSortChange('name')}
+                  className={`flex items-center ${sortBy === 'name' ? 'text-teal-600 font-medium' : 'text-gray-600'}`}
+                >
+                  Name
+                  {renderSortIcon('name')}
+                </button>
+                <button 
+                  onClick={() => handleSortChange('pricePerMeter')}
+                  className={`flex items-center ${sortBy === 'pricePerMeter' ? 'text-teal-600 font-medium' : 'text-gray-600'}`}
+                >
+                  Price
+                  {renderSortIcon('pricePerMeter')}
+                </button>
+                <button 
+                  onClick={() => handleSortChange('type')}
+                  className={`flex items-center ${sortBy === 'type' ? 'text-teal-600 font-medium' : 'text-gray-600'}`}
+                >
+                  Type
+                  {renderSortIcon('type')}
+                </button>
+              </div>
+            </div>
+          </div>
+          
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
@@ -341,7 +436,7 @@ const FabricsPage = () => {
             <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6">
               {error}
             </div>
-          ) : filteredFabrics.length === 0 ? (
+          ) : sortedFilteredFabrics.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="text-xl font-medium mb-2">No fabrics found</h3>
               <p className="text-gray-600 mb-6">
@@ -362,7 +457,7 @@ const FabricsPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredFabrics.map((fabric) => (
+              {sortedFilteredFabrics.map((fabric) => (
                 <div
                   key={fabric.id}
                   className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"

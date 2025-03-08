@@ -8,6 +8,19 @@ AWS.config.update({
   secretAccessKey: config.aws.secretAccessKey
 });
 
+// Add this function to handle the logo bucket:
+
+export const getLogoUrl = (logoFileName: string): string => {
+  // Use a different bucket for logos
+  const logoBucket = process.env.AWS_LOGO_BUCKET || 'your-logo-bucket-name';
+  return `https://${logoBucket}.s3.${config.aws.region}.amazonaws.com/logos/${logoFileName}`;
+};
+
+//Then use this function when you need to reference a logo:
+//import { getLogoUrl } from '../services/aws/s3Service';
+// Example usage
+//const logoUrl = getLogoUrl('company-logo.png');
+
 // Initialize S3 service
 const s3 = new AWS.S3();
 
