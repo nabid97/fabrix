@@ -1,0 +1,107 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# === Node.js Dependencies ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+
+# === Build Output ===
+/build
+/dist
+/.parcel-cache
+/.next
+/out
+
+# === Logs ===
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+/*.tsbuildinfo
+
+# === Environment Files (Secrets) ===
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+secrets.json
+src/secrets.json
+
+# === Operating System Files ===
+.DS_Store
+Thumbs.db
+
+# === IDE Specific Files ===
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# === Misc ===
+/.pnp
+.pnp.js
+
+# === Test Coverage ===
+/coverage/
+
+# === Static Generated Files (optional, if you are using Next.js or similar) ===
+/.next/
+/out/
+
+# === Elastic Beanstalk Files ===
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+
+# === AWS Specific ===
+/.aws
+*.zip
+
+# === Terraform Files ===
+/terraform.tfstate
+/terraform.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+
+# === Uploads / Temp Files ===
+src/uploads
+
+# === Python Virtual Environments (in case you have any Python scripts in the repo) ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.venv/
+*.env/
+venv/
+env/
+
+# === Docker ===
+/docker-compose.override.yml
+/.dockerignore
+.docker/
+
+# === MongoDB Connection (optional, for local dev) ===
+mongo.env
+
+# === Editor backup files ===
+*.swp
+*.swo
+*~
+
+# === CI/CD (optional, if using GitHub Actions, CircleCI, etc.) ===
+/.github/workflows/*.bak
+/.circleci/config.yml.bak
+
+# === Ignore all ZIP files (often used for deployments) ===
+*.zip
