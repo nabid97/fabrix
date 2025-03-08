@@ -10,28 +10,27 @@ import { generateOrderNumber } from '../utils/generateOrderNumber';
 // @route   POST /api/orders
 // @access  Private
 export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const {
-    items,
-    customer,
-    shipping,
-    payment,
-    notes
-  } = req.body;
+  const { items, customer, shipping, payment, notes } = req.body;
 
   if (!items || items.length === 0) {
     throw new ApiError(400, 'No order items');
   }
 
-  // Create new order with generated order number
   const orderNumber = generateOrderNumber();
-  
+
   const order = await Order.create({
     orderNumber,
     user: req.user?._id,
-    items: items.map((item: any) => ({
-      ...item,
-      product: item.id.split('-')[0] // Extract original product ID
-    })),
+    items: items.map((item: any) => {
+      if (!item.id || typeof item.id !== 'string') {
+        throw new ApiError(400, 'Invalid item ID');
+      }
+      const productId = item.id.split('-')[0];
+      return {
+        ...item,
+        product: productId,
+      };
+    }),
     customer,
     shipping,
     payment: {
@@ -41,12 +40,11 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       tax: payment.tax,
       total: payment.total,
       isPaid: false,
-      paidAt: null
+      paidAt: null,
     },
-    notes
+    notes,
   });
 
-  // Send confirmation email
   await sendOrderConfirmationEmail(order, customer.email);
 
   res.status(201).json(order);

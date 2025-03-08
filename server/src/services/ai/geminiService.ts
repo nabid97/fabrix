@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import config from '../../config';
-//import { EnhancedGenerateContentResponse } from 'some-module'; // Adjust the import as needed
 
 // Initialize Gemini API
 const genAI = new GoogleGenerativeAI(config.googleAI.apiKey);
@@ -14,7 +13,7 @@ const genAI = new GoogleGenerativeAI(config.googleAI.apiKey);
 export const generateGeminiResponse = async (
   messages: any[],
   generationConfig: any = {}
-): Promise<any> => {
+): Promise<{ text: string; safetyRatings?: any[] }> => {
   try {
     // Configure Gemini model
     const model = genAI.getGenerativeModel({
@@ -45,7 +44,7 @@ export const generateGeminiResponse = async (
       ],
     });
 
-    // Add some context about FabriX to help with clothing and fabric-related questions
+    // System prompt for better response context
     const systemPrompt = `
       You are a helpful AI assistant for FabriX, an e-commerce platform specializing in 
       custom clothing and premium fabrics for businesses. Respond to customer queries 
@@ -66,26 +65,25 @@ export const generateGeminiResponse = async (
 
     // Start a chat session
     const chat = model.startChat({
-      history: formatMessagesForGemini(messages.slice(0, -1)), // Previous messages excluding the latest
-      generationConfig: {
-        temperature: generationConfig?.temperature || 0.7,
-        topK: generationConfig?.topK || 40,
-        topP: generationConfig?.topP || 0.95,
-        maxOutputTokens: generationConfig?.maxOutputTokens || 1024,
-      },
+      history: formatMessagesForGemini(messages.slice(0, -1)), // Exclude latest message from history
     });
 
-    // Send latest message with system prompt
+    // Get the latest user message
     const latestMessage = messages[messages.length - 1];
     const enhancedPrompt = `${systemPrompt}\n\nUser question: ${latestMessage.parts[0].text}`;
-    
+
     // Generate response
     const result = await chat.sendMessage(enhancedPrompt);
-    const response: EnhancedGenerateContentResponse = result.response;
+
+    // Extract response text safely
+    const responseText = result.response.candidates?.[0]?.content?.parts?.[0]?.text || "I'm not sure how to respond.";
+
+    // Extract safety ratings safely
+    const safetyRatings = result.response.candidates?.[0]?.safetyRatings || [];
 
     return {
-      text: response.text(),
-      safetyRatings: response.safetyRatings // Ensure this property exists on the type
+      text: responseText,
+      safetyRatings: safetyRatings,
     };
   } catch (error) {
     console.error('Gemini API error:', error);
@@ -101,6 +99,6 @@ export const generateGeminiResponse = async (
 const formatMessagesForGemini = (messages: any[]): any[] => {
   return messages.map(msg => ({
     role: msg.role === 'user' ? 'user' : 'model',
-    parts: msg.parts
+    parts: msg.parts,
   }));
 };

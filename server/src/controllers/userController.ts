@@ -120,32 +120,25 @@ export const updateUserProfile = asyncHandler(async (req: AuthRequest, res: Resp
     throw new ApiError(404, 'User not found');
   }
 
-  // Update user fields
   user.name = req.body.name || user.name;
   user.email = req.body.email || user.email;
   user.phone = req.body.phone || user.phone;
   user.company = req.body.company || user.company;
-  
-  // Only update password if provided
+
   if (req.body.password) {
     user.password = req.body.password;
   }
 
-  // Update or add address
   if (req.body.address) {
-    const addressExists = user.addresses.findIndex(
-      addr => addr._id?.toString() === req.body.address._id
-    );
+    const newAddress = req.body.address;
+    const addressIndex = newAddress._id
+      ? user.addresses.findIndex((addr) => addr._id?.toString() === newAddress._id)
+      : -1;
 
-    if (addressExists >= 0) {
-      // Update existing address
-      user.addresses[addressExists] = {
-        ...user.addresses[addressExists],
-        ...req.body.address
-      };
+    if (addressIndex >= 0) {
+      user.addresses[addressIndex] = { ...user.addresses[addressIndex], ...newAddress };
     } else {
-      // Add new address
-      user.addresses.push(req.body.address);
+      user.addresses.push(newAddress);
     }
   }
 
@@ -158,7 +151,7 @@ export const updateUserProfile = asyncHandler(async (req: AuthRequest, res: Resp
     isAdmin: updatedUser.isAdmin,
     addresses: updatedUser.addresses,
     phone: updatedUser.phone,
-    company: updatedUser.company
+    company: updatedUser.company,
   });
 });
 
