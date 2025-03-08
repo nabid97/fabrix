@@ -7,6 +7,7 @@ import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import Chatbot from './components/common/Chatbot';
 
 // Lazy-loaded page components
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -61,6 +62,7 @@ function App() {
                 </Suspense>
               </main>
               <Footer />
+              <Chatbot />
             </div>
           </ChatbotProvider>
         </CartProvider>
