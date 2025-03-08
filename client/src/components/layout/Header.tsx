@@ -82,7 +82,9 @@ const Header: React.FC<HeaderProps> = () => {
               <div className="relative group">
                 <button className="flex items-center space-x-1 text-gray-700 hover:text-teal-600">
                   <UserIcon size={24} />
-                  <span className="hidden lg:inline">{user?.name || 'Account'}</span>
+                  <span className="hidden lg:inline">
+  {user?.name || user?.email?.split('@')[0] || 'Account'}
+</span>
                 </button>
                 <div className="absolute right-0 w-48 mt-2 bg-white shadow-lg rounded-md overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                   <div className="py-2">

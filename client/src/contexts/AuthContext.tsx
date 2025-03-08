@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser({
         email: userData.attributes.email,
         sub: userData.attributes.sub,
-        name: userData.attributes.name,
+        name: userData.attributes.name || userData.attributes.email.split('@')[0] || 'User', // Fallback
       });
     } catch (error) {
       console.error('Login error:', error);

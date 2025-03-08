@@ -3,7 +3,7 @@
 // expect(element).toHaveTextContent(/react/i)
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
-import { mockAuthenticatedUser, mockUnauthenticatedUser } from './utils/testUtils';
+import { mockAuthenticatedUser } from './utils/testUtils';
 
 // Mock environment variables
 window.matchMedia = window.matchMedia || function() {
@@ -22,9 +22,10 @@ class MockIntersectionObserver {
   readonly root: Element | null = null;
   readonly rootMargin: string = '';
   readonly thresholds: ReadonlyArray<number> = [];
+  private callback: IntersectionObserverCallback;
 
   constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
-    // Implementation not needed for tests
+    this.callback = callback;
   }
 
   disconnect() {

@@ -93,8 +93,9 @@ export const getOrderById = asyncHandler(async (req: AuthRequest, res: Response)
   }
   
   // Check if the user is authorized to view this order
-  if (!req.user?.isAdmin && order.user.toString() !== req.user?._id.toString()) {
-    throw new ApiError(403, 'Not authorized to view this order');
+  if (!req.user?.isAdmin && order.user.toString() !== req.user?._id?.toString()) {
+
+  throw new ApiError(403, 'Not authorized to view this order');
   }
   
   res.json(order);
