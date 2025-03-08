@@ -1,83 +1,138 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+// src/pages/LogoGeneratorPage.tsx
+import React, { useState } from 'react';
 import { generateLogo } from '../api/logoApi';
-import { Loader, AlertCircle, Download, Shirt } from 'lucide-react';
 
-// Logo Style options
-const LOGO_STYLES = [
-  { id: 'minimalist', name: 'Minimalist' },
-  { id: 'vintage', name: 'Vintage' },
-  { id: 'modern', name: 'Modern' },
-  { id: 'abstract', name: 'Abstract' },
-  { id: 'geometric', name: 'Geometric' },
-  { id: 'handdrawn', name: 'Hand-drawn' },
+interface LogoFormData {
+  companyName: string;
+  industry: string;
+  slogan: string;
+  style: string;
+  colors: string[];
+  size: 'small' | 'medium' | 'large';
+  customPrimaryColor: string;
+  customSecondaryColor: string;
+}
+
+const industries = [
+  'Technology',
+  'Healthcare',
+  'Finance',
+  'Education',
+  'Retail',
+  'Food & Beverage',
+  'Manufacturing',
+  'Entertainment',
+  'Transportation',
+  'Construction',
+  'Agriculture',
+  'Real Estate',
+  'Sports',
+  'Fashion',
+  'Travel'
 ];
 
-// Color schemes
-const COLOR_SCHEMES = [
-  { id: 'monochrome', name: 'Monochrome', colors: ['#000000', '#FFFFFF'] },
-  { id: 'blue', name: 'Blue', colors: ['#1E3A8A', '#3B82F6', '#93C5FD'] },
-  { id: 'green', name: 'Green', colors: ['#065F46', '#10B981', '#A7F3D0'] },
-  { id: 'red', name: 'Red', colors: ['#7F1D1D', '#EF4444', '#FECACA'] },
-  { id: 'purple', name: 'Purple', colors: ['#4C1D95', '#8B5CF6', '#DDD6FE'] },
-  { id: 'orange', name: 'Orange', colors: ['#7C2D12', '#F97316', '#FFEDD5'] },
-  { id: 'custom', name: 'Custom Colors', colors: [] },
+const styles = [
+  'Modern',
+  'Vintage',
+  'Minimalist',
+  'Bold',
+  'Playful',
+  'Luxury',
+  'Tech',
+  'Handcrafted',
+  'Corporate',
+  'Geometric'
 ];
 
-const LogoGeneratorPage = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+const colorPalettes = [
+  { name: 'Blue & Orange', colors: ['#1E88E5', '#FF9800'] },
+  { name: 'Green & Purple', colors: ['#4CAF50', '#9C27B0'] },
+  { name: 'Red & Teal', colors: ['#F44336', '#009688'] },
+  { name: 'Black & Gold', colors: ['#212121', '#FFC107'] },
+  { name: 'Pink & Navy', colors: ['#E91E63', '#3F51B5'] },
+  { name: 'Custom Colors', colors: [] }
+];
+
+const LogoGeneratorPage: React.FC = () => {
+  const [formData, setFormData] = useState<LogoFormData>({
     companyName: '',
     industry: '',
     slogan: '',
-    style: 'minimalist',
-    colorScheme: 'monochrome',
-    customPrimaryColor: '#000000',
-    customSecondaryColor: '#FFFFFF',
-    customAccentColor: '#CCCCCC',
+    style: '',
+    colors: colorPalettes[0].colors,
     size: 'medium',
+    customPrimaryColor: '#1E88E5',
+    customSecondaryColor: '#FF9800'
   });
-
+  
+  const [selectedPalette, setSelectedPalette] = useState(colorPalettes[0].name);
   const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [generatedLogo, setGeneratedLogo] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const handleColorPaletteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const paletteName = e.target.value;
+    setSelectedPalette(paletteName);
+    
+    const palette = colorPalettes.find(p => p.name === paletteName);
+    if (palette) {
+      if (palette.name === 'Custom Colors') {
+        // Keep custom colors if switching to custom palette
+        setFormData({
+          ...formData,
+          colors: [formData.customPrimaryColor, formData.customSecondaryColor]
+        });
+      } else {
+        // Update colors when selecting a predefined palette
+        setFormData({
+          ...formData,
+          colors: palette.colors
+        });
+      }
+    }
+  };
+
+  const handleCustomColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+    
+    // If custom colors palette is selected, update the colors array
+    if (selectedPalette === 'Custom Colors') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        colors: name === 'customPrimaryColor' 
+          ? [value, prev.customSecondaryColor]
+          : [prev.customPrimaryColor, value]
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setGenerating(true);
     setError(null);
-
+    setGenerating(true);
+    
     try {
-      // Prepare colors array based on colorScheme
-      let colors = [];
-      if (formData.colorScheme === 'custom') {
-        colors = [
-          formData.customPrimaryColor,
-          formData.customSecondaryColor,
-          formData.customAccentColor,
-        ];
-      } else {
-        const selectedScheme = COLOR_SCHEMES.find(
-          (scheme) => scheme.id === formData.colorScheme
-        );
-        colors = selectedScheme?.colors || [];
-      }
-
-      // Prepare request payload
       const payload = {
         companyName: formData.companyName,
         industry: formData.industry,
         slogan: formData.slogan,
         style: formData.style,
-        colors,
-        size: formData.size,
+        colors: formData.colors,
+        size: formData.size
       };
 
       // Call API to generate logo
@@ -85,52 +140,35 @@ const LogoGeneratorPage = () => {
       setGeneratedLogo(logoUrl);
     } catch (err) {
       setError('Failed to generate logo. Please try again.');
-      console.error('Logo generation error:', err);
     } finally {
       setGenerating(false);
     }
   };
 
   const handleDownload = () => {
-    // Download logic for generated logo
-    if (generatedLogo) {
-      const link = document.createElement('a');
-      link.href = generatedLogo;
-      link.download = `${formData.companyName.replace(/\s+/g, '-').toLowerCase()}-logo.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
-
-  const handleUseInClothing = () => {
-    // Save the logo to session and navigate to clothing page
-    if (generatedLogo) {
-      sessionStorage.setItem('generatedLogo', generatedLogo);
-      navigate('/clothing?withLogo=true');
-    }
+    if (!generatedLogo) return;
+    
+    // Create a temporary link element
+    const link = document.createElement('a');
+    link.href = generatedLogo;
+    link.download = `${formData.companyName.replace(/\s+/g, '-').toLowerCase()}-logo.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8 text-center">Logo Generator</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">AI Logo Generator</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Form Section */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-6">Design Your Logo</h2>
-          
-          {error && (
-            <div className="mb-6 bg-red-50 text-red-700 p-4 rounded-lg flex items-center">
-              <AlertCircle size={20} className="mr-2" />
-              {error}
-            </div>
-          )}
-          
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-6">
-              {/* Company Name */}
-              <div>
+        {/* Logo Generation Form */}
+        <div>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-6">Brand Information</h2>
+            
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
                 <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-1">
                   Company Name *
                 </label>
@@ -141,30 +179,35 @@ const LogoGeneratorPage = () => {
                   value={formData.companyName}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  placeholder="Enter your company name"
                 />
               </div>
               
-              {/* Industry */}
-              <div>
+              <div className="mb-4">
                 <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">
-                  Industry
+                  Industry *
                 </label>
-                <input
-                  type="text"
+                <select
                   id="industry"
                   name="industry"
                   value={formData.industry}
                   onChange={handleInputChange}
-                  placeholder="e.g. Fashion, Technology, Food"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                />
+                  required
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="" disabled>Select your industry</option>
+                  {industries.map((industry) => (
+                    <option key={industry} value={industry}>
+                      {industry}
+                    </option>
+                  ))}
+                </select>
               </div>
               
-              {/* Slogan */}
-              <div>
+              <div className="mb-4">
                 <label htmlFor="slogan" className="block text-sm font-medium text-gray-700 mb-1">
-                  Slogan or Tagline
+                  Slogan (Optional)
                 </label>
                 <input
                   type="text"
@@ -172,53 +215,55 @@ const LogoGeneratorPage = () => {
                   name="slogan"
                   value={formData.slogan}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  placeholder="Enter your slogan or tagline"
                 />
               </div>
               
-              {/* Logo Style */}
-              <div>
+              <h2 className="text-xl font-semibold mt-8 mb-6">Design Preferences</h2>
+              
+              <div className="mb-4">
                 <label htmlFor="style" className="block text-sm font-medium text-gray-700 mb-1">
-                  Logo Style
+                  Logo Style *
                 </label>
                 <select
                   id="style"
                   name="style"
                   value={formData.style}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  required
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 >
-                  {LOGO_STYLES.map((style) => (
-                    <option key={style.id} value={style.id}>
-                      {style.name}
+                  <option value="" disabled>Select a style</option>
+                  {styles.map((style) => (
+                    <option key={style} value={style}>
+                      {style}
                     </option>
                   ))}
                 </select>
               </div>
               
-              {/* Color Scheme */}
-              <div>
-                <label htmlFor="colorScheme" className="block text-sm font-medium text-gray-700 mb-1">
-                  Color Scheme
+              <div className="mb-4">
+                <label htmlFor="colorPalette" className="block text-sm font-medium text-gray-700 mb-1">
+                  Color Palette *
                 </label>
                 <select
-                  id="colorScheme"
-                  name="colorScheme"
-                  value={formData.colorScheme}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  id="colorPalette"
+                  name="colorPalette"
+                  value={selectedPalette}
+                  onChange={handleColorPaletteChange}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 >
-                  {COLOR_SCHEMES.map((scheme) => (
-                    <option key={scheme.id} value={scheme.id}>
-                      {scheme.name}
+                  {colorPalettes.map((palette) => (
+                    <option key={palette.name} value={palette.name}>
+                      {palette.name}
                     </option>
                   ))}
                 </select>
               </div>
               
-              {/* Custom Colors (conditionally rendered) */}
-              {formData.colorScheme === 'custom' && (
-                <div className="grid grid-cols-3 gap-4">
+              {selectedPalette === 'Custom Colors' && (
+                <div className="mb-4 grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="customPrimaryColor" className="block text-sm font-medium text-gray-700 mb-1">
                       Primary
@@ -228,150 +273,8 @@ const LogoGeneratorPage = () => {
                       id="customPrimaryColor"
                       name="customPrimaryColor"
                       value={formData.customPrimaryColor}
-                      onChange={handleInputChange}
+                      onChange={handleCustomColorChange}
                       className="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="customAccentColor" className="block text-sm font-medium text-gray-700 mb-1">
-                      Accent
-                    </label>
-                    <input
-                      type="color"
-                      id="customAccentColor"
-                      name="customAccentColor"
-                      value={formData.customAccentColor}
-                      onChange={handleInputChange}
-                      className="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
-                    />
-                  </div>
-                </div>
-              )}
-              
-              {/* Logo Size */}
-              <div>
-                <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-1">
-                  Logo Size
-                </label>
-                <select
-                  id="size"
-                  name="size"
-                  value={formData.size}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value="small">Small</option>
-                  <option value="medium">Medium</option>
-                  <option value="large">Large</option>
-                </select>
-              </div>
-              
-              {/* Submit Button */}
-              <div>
-                <button
-                  type="submit"
-                  disabled={generating}
-                  className={`w-full bg-teal-600 text-white py-3 px-4 rounded-md font-medium hover:bg-teal-700 transition-colors flex items-center justify-center ${
-                    generating ? 'opacity-70 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {generating ? (
-                    <>
-                      <Loader size={20} className="animate-spin mr-2" />
-                      Generating...
-                    </>
-                  ) : (
-                    'Generate Logo'
-                  )}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-        
-        {/* Preview Section */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-6">Logo Preview</h2>
-          
-          <div className="flex flex-col items-center">
-            <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center mb-6">
-              {generating ? (
-                <div className="text-center">
-                  <Loader size={40} className="animate-spin text-teal-600 mx-auto mb-4" />
-                  <p className="text-gray-500">Generating your logo...</p>
-                  <p className="text-xs text-gray-400 mt-2">This may take a moment</p>
-                </div>
-              ) : generatedLogo ? (
-                <img
-                  src={generatedLogo}
-                  alt="Generated Logo"
-                  className="max-w-full max-h-full object-contain"
-                />
-              ) : (
-                <div className="text-center text-gray-400">
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="mx-auto"
-                    >
-                      <path d="M12 5v8.5M15.5 12H12m-5 0h1.5"></path>
-                      <path d="M20.5 16.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v9Z"></path>
-                    </svg>
-                  </div>
-                  <p>Your logo will appear here</p>
-                </div>
-              )}
-            </div>
-            
-            {generatedLogo && (
-              <div className="w-full space-y-4">
-                <button
-                  onClick={handleDownload}
-                  className="w-full bg-gray-800 text-white py-2 px-4 rounded-md font-medium hover:bg-gray-900 transition-colors flex items-center justify-center"
-                >
-                  <Download size={18} className="mr-2" />
-                  Download Logo
-                </button>
-                
-                <button
-                  onClick={handleUseInClothing}
-                  className="w-full bg-teal-600 text-white py-2 px-4 rounded-md font-medium hover:bg-teal-700 transition-colors flex items-center justify-center"
-                >
-                  <Shirt size={18} className="mr-2" />
-                  Use Logo in Clothing
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      {/* Information Section */}
-      <div className="mt-12 bg-gray-50 rounded-xl p-6">
-        <h2 className="text-xl font-semibold mb-4">About Our Logo Generator</h2>
-        <p className="text-gray-700 mb-4">
-          Our AI-powered logo generator uses Stability AI to create unique, professional logos 
-          for your business. Each logo is generated based on your inputs and customized to match 
-          your brand's identity.
-        </p>
-        <p className="text-gray-700">
-          After generating your logo, you can download it in high resolution or use it directly 
-          on your custom clothing order. The generated logos are royalty-free for your business use.
-        </p>
-      </div>
-    </div>
-  );
-};
-
-export default LogoGeneratorPage;d cursor-pointer"
                     />
                   </div>
                   <div>
@@ -383,5 +286,129 @@ export default LogoGeneratorPage;d cursor-pointer"
                       id="customSecondaryColor"
                       name="customSecondaryColor"
                       value={formData.customSecondaryColor}
+                      onChange={handleCustomColorChange}
+                      className="w-full h-10 border border-gray-300 rounded-md cursor-pointer"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Logo Size *
+                </label>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <input
+                      type="radio"
+                      id="sizeSmall"
+                      name="size"
+                      value="small"
+                      checked={formData.size === 'small'}
                       onChange={handleInputChange}
-                      className="w-full h-10 border border-gray-300 rounded-m
+                      className="mr-2"
+                    />
+                    <label htmlFor="sizeSmall">Small</label>
+                  </div>
+                  <div>
+                    <input
+                      type="radio"
+                      id="sizeMedium"
+                      name="size"
+                      value="medium"
+                      checked={formData.size === 'medium'}
+                      onChange={handleInputChange}
+                      className="mr-2"
+                    />
+                    <label htmlFor="sizeMedium">Medium</label>
+                  </div>
+                  <div>
+                    <input
+                      type="radio"
+                      id="sizeLarge"
+                      name="size"
+                      value="large"
+                      checked={formData.size === 'large'}
+                      onChange={handleInputChange}
+                      className="mr-2"
+                    />
+                    <label htmlFor="sizeLarge">Large</label>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8">
+                <button
+                  type="submit"
+                  disabled={generating}
+                  className="w-full py-3 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-md shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {generating ? 'Generating...' : 'Generate Logo'}
+                </button>
+              </div>
+              
+              {error && (
+                <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
+                  {error}
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+        
+        {/* Logo Preview */}
+        <div>
+          <div className="bg-white p-6 rounded-lg shadow-md h-full flex flex-col">
+            <h2 className="text-xl font-semibold mb-6">Logo Preview</h2>
+            
+            <div className="flex-grow flex items-center justify-center bg-gray-100 rounded-md mb-6">
+              {generatedLogo ? (
+                <img 
+                  src={generatedLogo} 
+                  alt="Generated Logo" 
+                  className="max-w-full max-h-64"
+                />
+              ) : (
+                <div className="text-center p-8">
+                  <div className="w-32 h-32 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500">
+                    {generating ? 'Generating your logo...' : 'Fill out the form and generate to see your logo preview'}
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {generatedLogo && (
+              <>
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium mb-2">Logo Information</h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li><strong>Company:</strong> {formData.companyName}</li>
+                    <li><strong>Industry:</strong> {formData.industry}</li>
+                    {formData.slogan && <li><strong>Slogan:</strong> {formData.slogan}</li>}
+                    <li><strong>Style:</strong> {formData.style}</li>
+                    <li><strong>Size:</strong> {formData.size}</li>
+                  </ul>
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="w-full py-3 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-md shadow-sm"
+                >
+                  Download Logo
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LogoGeneratorPage;

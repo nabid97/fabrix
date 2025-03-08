@@ -27,7 +27,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
   }
 
   // If admin route but user is not admin
-  if (adminOnly && !user?.isAdmin) {
+  if (adminOnly && !(user as { isAdmin?: boolean })?.isAdmin) {
     return <Navigate to="/" replace />;
   }
 

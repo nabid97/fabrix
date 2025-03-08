@@ -2,23 +2,20 @@ import { createContext, useState, useContext, ReactNode, useEffect } from 'react
 
 export interface CartItem {
   id: string;
-  type: 'clothing' | 'fabric';
   name: string;
   price: number;
   quantity: number;
   imageUrl: string;
-  // Clothing specific properties
-  size?: string;
+  type: 'clothing' | 'fabric';
   color?: string;
-  fabric?: string;
-  gender?: string;
-  logoUrl?: string;
-  // Fabric specific properties
+  size?: string;
+  orderQuantity?: number; // Add this
+  logoUrl?: string; // Add this
+  logoPosition?: string; // Add this
   fabricType?: string;
   length?: number;
-  fabricStyle?: string;
+  [key: string]: any; // For flexibility
 }
-
 interface CartContextType {
   items: CartItem[];
   addItem: (item: CartItem) => void;

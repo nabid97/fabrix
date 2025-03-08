@@ -1,23 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { getOrderDetails } from '../api/orderApi';
 import { CheckCircle, ArrowRight, Printer, Mail, Package, Clock } from 'lucide-react';
+import axios from 'axios';
+import { API_BASE_URL } from '../config/constants';
 
 // Order details type
-interface OrderDetails {
+export interface OrderDetails {
   id: string;
   orderNumber: string;
   createdAt: string;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  items: {
-    id: string;
-    name: string;
-    price: number;
-    quantity: number;
-    imageUrl: string;
-    type: 'clothing' | 'fabric';
-    [key: string]: any; // For type-specific properties
-  }[];
+  items: OrderItem[];
   customer: {
     firstName: string;
     lastName: string;
@@ -45,6 +38,64 @@ interface OrderDetails {
     cardBrand?: string;
   };
 }
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+  type: 'clothing' | 'fabric';
+  size?: string;
+  color?: string;
+  orderQuantity?: number;
+  logoUrl?: string;
+  logoPosition?: string;
+  fabricType?: string;
+  length?: number;
+  [key: string]: any; // For other type-specific properties
+}
+
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+  type: 'clothing' | 'fabric';
+  color?: string;
+  size?: string;
+  orderQuantity?: number; // Add this
+  logoUrl?: string; // Add this
+  logoPosition?: string; // Add this
+  fabricType?: string;
+  length?: number;
+  [key: string]: any; // For flexibility
+}
+
+// Get order details by ID
+export const getOrderDetails = async (orderId: string): Promise<OrderDetails> => {
+  const response = await axios.get(`${API_BASE_URL}/orders/${orderId}`);
+  return response.data;
+};
+
+// Create new order
+export const createOrder = async (orderData: any): Promise<OrderDetails> => {
+  const response = await axios.post(`${API_BASE_URL}/orders`, orderData);
+  return response.data;
+};
+
+// Add other order-related API functions here
+
+// LoadingSpinner component
+const LoadingSpinner = ({ message }: { message: string }) => {
+  return (
+    <div className="flex flex-col items-center justify-center p-12">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-600 mb-4"></div>
+      <p className="text-gray-700">{message}</p>
+    </div>
+  );
+};
 
 const OrderConfirmationPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -76,16 +127,7 @@ const OrderConfirmationPage = () => {
     window.print();
   };
   
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-12 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading order details...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner message="Loading order details..." />;
   
   if (error || !order) {
     return (

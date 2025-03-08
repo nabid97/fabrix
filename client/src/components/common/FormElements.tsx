@@ -21,8 +21,10 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement>, BaseP
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement>, BaseProps {}
 
 // Select component props
-export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement>, BaseProps {
-  options: { value: string; label: string }[];
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, BaseProps {
+  options: Array<{ value: string; label: string }>;
+  fullWidth?: boolean;
+  placeholder?: string;  // Add this line
 }
 
 // Checkbox component props

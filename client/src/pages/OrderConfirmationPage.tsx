@@ -1,91 +1,98 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getOrderDetails } from '../api/orderApi';
 import { CheckCircle, ArrowRight, Printer, Mail, Package, Clock } from 'lucide-react';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
-// Order details type
-interface OrderDetails {
+// Define the order types
+interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+  type: 'clothing' | 'fabric';
+  // Clothing specific props
+  size?: string;
+  color?: string;
+  orderQuantity?: number;
+  // Fabric specific props
+  length?: number;
+  fabricType?: string;
+}
+
+interface Customer {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  company?: string;
+}
+
+interface Shipping {
+  address1: string;
+  address2?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  method: string;
+  trackingNumber?: string;
+  estimatedDelivery?: string;
+}
+
+interface Payment {
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  cardBrand?: string;
+  lastFour?: string;
+}
+
+interface Order {
   id: string;
   orderNumber: string;
   createdAt: string;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  items: {
-    id: string;
-    name: string;
-    price: number;
-    quantity: number;
-    imageUrl: string;
-    type: 'clothing' | 'fabric';
-    [key: string]: any; // For type-specific properties
-  }[];
-  customer: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    company?: string;
-  };
-  shipping: {
-    address1: string;
-    address2?: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-    method: string;
-    trackingNumber?: string;
-    estimatedDelivery?: string;
-  };
-  payment: {
-    subtotal: number;
-    shipping: number;
-    tax: number;
-    total: number;
-    lastFour?: string;
-    cardBrand?: string;
-  };
+  customer: Customer;
+  shipping: Shipping;
+  payment: Payment;
+  items: OrderItem[];
 }
 
-const OrderConfirmationPage = () => {
+const OrderConfirmationPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const [order, setOrder] = useState<OrderDetails | null>(null);
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const fetchOrderDetails = async () => {
-      if (!orderId) return;
-      
       try {
-        setLoading(true);
+        if (!orderId) {
+          setError('Order ID not found');
+          setLoading(false);
+          return;
+        }
+        
         const orderData = await getOrderDetails(orderId);
         setOrder(orderData);
+        setLoading(false);
       } catch (err) {
-        console.error('Error fetching order details:', err);
-        setError('Unable to load order details. Please try again later.');
-      } finally {
+        setError('Failed to load order details');
         setLoading(false);
       }
     };
-    
+
     fetchOrderDetails();
   }, [orderId]);
-  
-  // Function to print the page
+
   const handlePrint = () => {
     window.print();
   };
-  
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-12 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading order details...</p>
-        </div>
-      </div>
-    );
-  }
+
+  if (loading) return <LoadingSpinner message="Loading order details..." />;
   
   if (error || !order) {
     return (

@@ -112,15 +112,15 @@ const CartPage = () => {
                         
                         {/* Additional Info for Clothing */}
                         {item.type === 'clothing' && (
-                          <div className="mt-2">
-                            <p className="text-sm text-gray-600">
-                              Order Quantity: {item.orderQuantity} pcs
-                              {item.logoUrl && 
-                                ` | Logo: ${item.logoPosition.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}`
-                              }
-                            </p>
-                          </div>
-                        )}
+  <div className="mt-2">
+    <p className="text-sm text-gray-600">
+      Order Quantity: {item.orderQuantity} pcs
+      {item.logoUrl && item.logoPosition && 
+        ` | Logo: ${item.logoPosition.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}`
+      }
+    </p>
+  </div>
+)}
                         
                         <div className="flex justify-between items-center mt-4">
                           {/* Quantity Control */}

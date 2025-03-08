@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { useChatbot } from '../../contexts/ChatbotContext';
-import { ShoppingCart, User, Menu, X, MessageCircle } from 'lucide-react';
+import { ShoppingCart, Menu, X, MessageCircle } from 'lucide-react';
+import { User as UserIcon } from 'lucide-react'; // Rename to avoid conflict with User type
+import { User } from "oidc-client-ts";
 
-const Header = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+
+interface HeaderProps {
+  isAuthenticated: boolean;
+  user: User | null | undefined;
+  signOut: () => Promise<void>;
+}
+const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, signOut }) => {
   const { itemCount } = useCart();
   const { toggleChatbot } = useChatbot();
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -14,7 +20,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut(); // Use the signOut prop instead of logout
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -75,8 +81,8 @@ const Header = () => {
             {isAuthenticated ? (
               <div className="relative group">
                 <button className="flex items-center space-x-1 text-gray-700 hover:text-teal-600">
-                  <User size={24} />
-                  <span className="hidden lg:inline">{user?.name || 'Account'}</span>
+                  <UserIcon size={24} />
+                  <span className="hidden lg:inline">{user?.profile?.name || 'Account'}</span>
                 </button>
                 <div className="absolute right-0 w-48 mt-2 bg-white shadow-lg rounded-md overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
                   <div className="py-2">

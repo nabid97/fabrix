@@ -1,0 +1,45 @@
+db.clothingProducts.insertMany([
+    {
+      "name": "Premium Polo Shirt",
+      "description": "High-quality polo shirt made from combed cotton. Perfect for company uniforms and events with custom embroidery options.",
+      "images": [
+        "https://fabrix-products.s3.amazonaws.com/clothing/polo-shirt-1.jpg",
+        "https://fabrix-products.s3.amazonaws.com/clothing/polo-shirt-2.jpg"
+      ],
+      "price": 24.99,
+      "availableSizes": ["XS", "S", "M", "L", "XL", "2XL", "3XL"],
+      "availableColors": ["White", "Black", "Navy", "Red", "Green", "Blue"],
+      "fabricOptions": ["Cotton", "Cotton-Poly Blend", "Performance"],
+      "gender": ["Men", "Women", "Unisex"],
+      "minOrderQuantity": 50,
+      "weight": 200,
+      "dimensions": { "length": 30, "width": 20, "height": 2 },
+      "customizationOptions": {
+        "allowsLogo": true,
+        "logoPositions": ["left-chest", "right-chest", "center-chest", "back"],
+        "allowsCustomColors": true
+      }
+    },
+    {
+      "name": "Business Oxford Shirt",
+      "description": "Classic oxford button-down shirt for professional environments. Made with wrinkle-resistant fabric for all-day comfort and a polished look.",
+      "images": [
+        "https://fabrix-products.s3.amazonaws.com/clothing/oxford-shirt-1.jpg",
+        "https://fabrix-products.s3.amazonaws.com/clothing/oxford-shirt-2.jpg"
+      ],
+      "price": 34.99,
+      "availableSizes": ["S", "M", "L", "XL", "2XL"],
+      "availableColors": ["White", "Light Blue", "Blue", "Pink", "Gray"],
+      "fabricOptions": ["Cotton", "Cotton-Poly Blend", "Performance"],
+      "gender": ["Men", "Women"],
+      "minOrderQuantity": 50,
+      "weight": 250,
+      "dimensions": { "length": 32, "width": 22, "height": 2 },
+      "customizationOptions": {
+        "allowsLogo": true,
+        "logoPositions": ["left-chest", "right-chest"],
+        "allowsCustomColors": false
+      }
+    }
+  ])
+  

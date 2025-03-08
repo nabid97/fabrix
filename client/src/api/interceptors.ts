@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { getAuthToken } from '../utils/authUtils';
 
 /**
@@ -12,7 +12,7 @@ export const setupInterceptors = (
 ): AxiosInstance => {
   // Add a request interceptor to add auth token
   api.interceptors.request.use(
-    async (config: AxiosRequestConfig) => {
+    async (config: InternalAxiosRequestConfig) => {
       // Don't add token to auth endpoints
       if (config.url?.includes('/auth/') && !config.url?.includes('/auth/logout')) {
         return config;
@@ -98,7 +98,7 @@ export const setupInterceptors = (
       return Promise.reject({
         ...error,
         message:
-          error.response?.data?.message ||
+          (error.response?.data && typeof error.response.data === 'object' && 'message' in error.response.data ? error.response.data.message : undefined) ||
           error.message ||
           'An unexpected error occurred.',
       });

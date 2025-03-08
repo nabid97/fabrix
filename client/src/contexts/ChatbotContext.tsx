@@ -73,7 +73,7 @@ export const ChatbotProvider = ({ children }: ChatbotProviderProps) => {
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'I apologize, but I'm having trouble responding right now. Would you like to fill out our contact form for assistance from our team?',
+        text: "I apologize, but I'm having trouble responding right now. Would you like to fill out our contact form for assistance from our team?",
         sender: 'bot',
         timestamp: new Date(),
       };

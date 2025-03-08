@@ -1,0 +1,38 @@
+db.fabricProducts.insertMany([
+  {
+    "name": "Premium Cotton Twill",
+    "description": "Durable cotton twill fabric perfect for professional workwear, uniforms, and casual clothing. Features excellent color retention and comfort.",
+    "images": [
+      "https://fabrix-products.s3.amazonaws.com/fabrics/cotton-twill-1.jpg",
+      "https://fabrix-products.s3.amazonaws.com/fabrics/cotton-twill-2.jpg"
+    ],
+    "price": 12.99,
+    "fabricType": "Cotton",
+    "composition": "100% Cotton",
+    "weight": "280 GSM",
+    "width": 150,
+    "availableColors": ["White", "Black", "Navy", "Khaki", "Gray", "Red", "Blue"],
+    "styles": ["Solid", "Professional", "Durable"],
+    "minOrderLength": 10,
+    "careInstructions": "Machine wash cold, tumble dry low, warm iron if needed",
+    "certifications": ["OEKO-TEX Standard 100"]
+  },
+  {
+    "name": "Performance Polyester",
+    "description": "Moisture-wicking performance fabric ideal for athletic wear and outdoor uniforms. Features quick-dry technology and UV protection.",
+    "images": [
+      "https://fabrix-products.s3.amazonaws.com/fabrics/performance-poly-1.jpg",
+      "https://fabrix-products.s3.amazonaws.com/fabrics/performance-poly-2.jpg"
+    ],
+    "price": 15.99,
+    "fabricType": "Polyester",
+    "composition": "100% Polyester",
+    "weight": "240 GSM",
+    "width": 160,
+    "availableColors": ["White", "Black", "Navy", "Red", "Royal Blue", "Green", "Yellow"],
+    "styles": ["Performance", "Athletic", "Breathable"],
+    "minOrderLength": 10,
+    "careInstructions": "Machine wash cold, tumble dry low, do not iron",
+    "certifications": ["bluesign®", "OEKO-TEX Standard 100"]
+  }
+])
