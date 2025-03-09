@@ -200,4 +200,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📞 Contact
 
-- Project Link: [https://github.com/your-username/fabrix](https://github.com/your-username/fabrix)
+- Project Link: [https://github.com/nabid97/fabrix](https://github.com/nabid97/fabrix)

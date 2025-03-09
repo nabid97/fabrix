@@ -85,7 +85,7 @@ const ClothingPage = () => {
   });
   
   // Logo upload state
-  const [uploadedLogo, setUploadedLogo] = useState<string | null>(null);
+  const [, setUploadedLogo] = useState<string | null>(null);
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
   
   // Load products on initial render

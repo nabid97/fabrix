@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import config from './src/config';
 
 // Define port
-const PORT = config.port || 5000;
+const PORT = config.port || 3000;
 
 // Connect to MongoDB
 const connectDB = async () => {

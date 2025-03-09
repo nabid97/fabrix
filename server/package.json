@@ -5,12 +5,12 @@
     "main": "dist/app.js",
     "scripts": {
         "start": "node dist/server.js",
-        "dev": "nodemon --exec ts-node server.ts",
-        "build": "tsc",
-        "test": "jest",
-        "lint": "eslint src --ext .ts",
-        "seed": "ts-node src/seeder.ts",
-        "seed:destroy": "ts-node src/seeder.ts -d"
+    "dev": "nodemon --exec ts-node server.ts",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "test": "jest",
+    "seed": "ts-node src/seeder.ts",
+    "seed:destroy": "ts-node src/seeder.ts -d"
     },
     "keywords": [
         "ecommerce",
