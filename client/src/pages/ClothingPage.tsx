@@ -32,6 +32,10 @@ const colorOptions = [
   { name: 'Pink', value: 'pink', hex: '#ec4899' },
 ];
 
+const formatPrice = (price: number | undefined | null): string => {
+  if (price === undefined || price === null) return '0.00';
+  return price.toFixed(2);
+};
 const ClothingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -492,7 +496,7 @@ const ClothingPage = () => {
                     </p>
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-xl font-bold text-teal-600">
-                        ${product.basePrice.toFixed(2)}
+                        ${formatPrice(product.basePrice)}
                       </span>
                       <span className="text-sm text-gray-500">
                         Min. Order: {product.minOrderQuantity}
@@ -562,7 +566,7 @@ const ClothingPage = () => {
                   
                   <div className="text-center mb-6">
                     <h3 className="text-xl font-bold">{selectedProduct.name}</h3>
-                    <p className="text-gray-600">${selectedProduct.basePrice.toFixed(2)} per item</p>
+                    <p className="text-gray-600">${formatPrice(selectedProduct.basePrice)} per item</p>
                   </div>
                   
                   {/* Logo Upload/Select */}
@@ -798,7 +802,7 @@ const ClothingPage = () => {
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="flex justify-between items-center mb-2">
                         <span>Price per item:</span>
-                        <span>${selectedProduct.basePrice.toFixed(2)}</span>
+                        <span>${formatPrice(selectedProduct.basePrice)}</span>
                       </div>
                       <div className="flex justify-between items-center mb-2">
                         <span>Quantity:</span>
@@ -806,7 +810,7 @@ const ClothingPage = () => {
                       </div>
                       <div className="flex justify-between items-center font-bold text-lg border-t border-gray-300 pt-2 mt-2">
                         <span>Total Price:</span>
-                        <span>${(selectedProduct.basePrice * customization.quantity).toFixed(2)}</span>
+                        <span>${formatPrice(selectedProduct.basePrice * customization.quantity)}</span>
                       </div>
                     </div>
                     

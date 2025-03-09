@@ -9,7 +9,7 @@ const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   
   // MongoDB configuration
-  mongoURI: process.env.MONGODB_URI || 'mongodb://localhost:27017/fabrix',
+  mongoURI: process.env.MONGODB_URI || 'mongodb://localhost:27017/mydb1',
   
   // JWT configuration
   jwtSecret: process.env.JWT_SECRET || 'your_default_jwt_secret',
