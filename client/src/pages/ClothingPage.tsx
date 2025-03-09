@@ -358,32 +358,33 @@ const ClothingPage = () => {
             </div>
           </div>
           
-          {/* Fabric Filter */}
-          <div className="mb-6">
-            <h3 className="font-medium mb-3">Fabric</h3>
-            <div className="space-y-2">
-              {['Cotton', 'Polyester', 'Cotton-Poly Blend', 'Performance', 'Organic'].map(
-                (fabric) => (
-                  <label key={fabric} className="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedFabrics.includes(fabric.toLowerCase())}
-                      onChange={() =>
-                        toggleFilter(
-                          fabric.toLowerCase(),
-                          selectedFabrics,
-                          setSelectedFabrics
-                        )
-                      }
-                      className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                    />
-                    <span>{fabric}</span>
-                  </label>
-                )
-              )}
-            </div>
-          </div>
-          
+                  {/* Fabric Filter */}
+                  <div className="mb-6">
+                    <h3 className="font-medium mb-3">Fabric</h3>
+                   
+<div className="space-y-2">
+  {['Cotton', 'Polyester', 'Cotton-Poly Blend', 'Performance', 'Organic'].map(
+    (fabric, index) => (
+      <label key={fabric} className="flex items-center space-x-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={selectedFabrics.includes(fabric.toLowerCase())}
+          onChange={() =>
+            toggleFilter(
+              fabric.toLowerCase(),
+              selectedFabrics,
+              setSelectedFabrics
+            )
+          }
+          className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+        />
+        <span>{fabric}</span>
+      </label>
+    )
+  )}
+</div>
+                  </div>
+                
           {/* Price Range Filter */}
           <div className="mb-6">
             <h3 className="font-medium mb-3">Price Range (per item)</h3>

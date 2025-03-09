@@ -10,7 +10,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
-import { Check, AlertCircle, CreditCard, ChevronLeft } from 'lucide-react';
+import {AlertCircle, CreditCard, ChevronLeft } from 'lucide-react';
 
 // Initialize Stripe (in a real app, use your publishable key)
 const stripePromise = loadStripe('pk_test_your_stripe_publishable_key_here');

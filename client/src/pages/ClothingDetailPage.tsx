@@ -8,11 +8,11 @@ const ClothingDetailPage = () => {
   const { productSlug } = useParams<{ productSlug: string }>();
   const { addItem } = useCart();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   
   // In a real app, you would fetch product data based on the slug
   // For now, we'll use placeholder data
-  const [product, setProduct] = useState({
+  const [product] = useState({
     id: 'clothing-1',
     name: `${productSlug?.replace(/-/g, ' ')}`,
     description: 'Premium clothing item with high-quality materials',

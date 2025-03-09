@@ -4,21 +4,18 @@ import { ShoppingBag, Search, Menu, X, User, Heart, ChevronDown } from 'lucide-r
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(3);
-  const [scrollY, setScrollY] = useState(0);
+  const [cartCount] = useState(3);
   const [isScrolled, setIsScrolled] = useState(false);
   
   // Categories dropdown state
   const [categoriesOpen, setCategoriesOpen] = useState(false);
-
+  
   // Track scroll position
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      setScrollY(currentScrollY);
       setIsScrolled(currentScrollY > 50);
     };
-    
     window.addEventListener('scroll', handleScroll, { passive: true });
     
     // Call handler right away to get initial state
